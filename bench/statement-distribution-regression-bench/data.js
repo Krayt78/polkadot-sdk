@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1732018317269,
+  "lastUpdate": 1732032221190,
   "repoUrl": "https://github.com/paritytech/polkadot-sdk",
   "entries": {
     "statement-distribution-regression-bench": [
@@ -20807,6 +20807,50 @@ window.BENCHMARK_DATA = {
           {
             "name": "test-environment",
             "value": 0.045525338731999924,
+            "unit": "seconds"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "maciej.zyszkiewicz@parity.io",
+            "name": "Maciej",
+            "username": "Overkillus"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8d4138f77106a6af49920ad84f3283f696f3f905",
+          "message": "Validator Re-Enabling (#5724)\n\nAims to implement Stage 3 of Validator Disbling as outlined here:\nhttps://github.com/paritytech/polkadot-sdk/issues/4359\n\nFeatures:\n- [x] New Disabling Strategy (Staking level)\n- [x] Re-enabling logic (Session level)\n- [x] More generic disabling decision output\n- [x] New Disabling Events\n\nTesting & Security:\n- [x] Unit tests\n- [x] Mock tests\n- [x] Try-runtime checks\n- [x] Try-runtime tested on westend snap\n- [x] Try-runtime CI tests\n- [ ] Re-enabling Zombienet Test (?)\n- [ ] SRLabs Audit\n\nCloses #4745 \nCloses #2418\n\n---------\n\nCo-authored-by: ordian <write@reusable.software>\nCo-authored-by: Ankan <10196091+Ank4n@users.noreply.github.com>\nCo-authored-by: Tsvetomir Dimitrov <tsvetomir@parity.io>",
+          "timestamp": "2024-11-19T14:40:25Z",
+          "tree_id": "83f2cf93ba1c0f793e28828d628861fa4a3d33f6",
+          "url": "https://github.com/paritytech/polkadot-sdk/commit/8d4138f77106a6af49920ad84f3283f696f3f905"
+        },
+        "date": 1732032201859,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Sent to peers",
+            "value": 127.95599999999996,
+            "unit": "KiB"
+          },
+          {
+            "name": "Received from peers",
+            "value": 106.39999999999996,
+            "unit": "KiB"
+          },
+          {
+            "name": "test-environment",
+            "value": 0.04565740164999999,
+            "unit": "seconds"
+          },
+          {
+            "name": "statement-distribution",
+            "value": 0.03551599604599999,
             "unit": "seconds"
           }
         ]

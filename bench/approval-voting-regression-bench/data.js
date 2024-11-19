@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1732018292615,
+  "lastUpdate": 1732032194128,
   "repoUrl": "https://github.com/paritytech/polkadot-sdk",
   "entries": {
     "approval-voting-regression-bench": [
@@ -38860,6 +38860,105 @@ window.BENCHMARK_DATA = {
           {
             "name": "test-environment",
             "value": 3.3191460439622036,
+            "unit": "seconds"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "maciej.zyszkiewicz@parity.io",
+            "name": "Maciej",
+            "username": "Overkillus"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8d4138f77106a6af49920ad84f3283f696f3f905",
+          "message": "Validator Re-Enabling (#5724)\n\nAims to implement Stage 3 of Validator Disbling as outlined here:\nhttps://github.com/paritytech/polkadot-sdk/issues/4359\n\nFeatures:\n- [x] New Disabling Strategy (Staking level)\n- [x] Re-enabling logic (Session level)\n- [x] More generic disabling decision output\n- [x] New Disabling Events\n\nTesting & Security:\n- [x] Unit tests\n- [x] Mock tests\n- [x] Try-runtime checks\n- [x] Try-runtime tested on westend snap\n- [x] Try-runtime CI tests\n- [ ] Re-enabling Zombienet Test (?)\n- [ ] SRLabs Audit\n\nCloses #4745 \nCloses #2418\n\n---------\n\nCo-authored-by: ordian <write@reusable.software>\nCo-authored-by: Ankan <10196091+Ank4n@users.noreply.github.com>\nCo-authored-by: Tsvetomir Dimitrov <tsvetomir@parity.io>",
+          "timestamp": "2024-11-19T14:40:25Z",
+          "tree_id": "83f2cf93ba1c0f793e28828d628861fa4a3d33f6",
+          "url": "https://github.com/paritytech/polkadot-sdk/commit/8d4138f77106a6af49920ad84f3283f696f3f905"
+        },
+        "date": 1732032174642,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Sent to peers",
+            "value": 63634.119999999995,
+            "unit": "KiB"
+          },
+          {
+            "name": "Received from peers",
+            "value": 52943.5,
+            "unit": "KiB"
+          },
+          {
+            "name": "approval-distribution/test-environment",
+            "value": 0.00001898947,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-voting-parallel/approval-voting-parallel-subsystem",
+            "value": 0.48349450465000265,
+            "unit": "seconds"
+          },
+          {
+            "name": "test-environment",
+            "value": 3.361016582242164,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-distribution",
+            "value": 0.00001898947,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-voting-parallel",
+            "value": 12.185602872210003,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-voting/test-environment",
+            "value": 0.00001671415,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-voting-parallel/approval-voting-gather-signatures",
+            "value": 0.005917948289999997,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-voting",
+            "value": 0.00001671415,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-voting-parallel/approval-voting-parallel-2",
+            "value": 2.4301886071099994,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-voting-parallel/approval-voting-parallel-0",
+            "value": 2.3946879378400006,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-voting-parallel/approval-voting-parallel-3",
+            "value": 2.399804767840001,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-voting-parallel/approval-voting-parallel-db",
+            "value": 2.0796951536999986,
+            "unit": "seconds"
+          },
+          {
+            "name": "approval-voting-parallel/approval-voting-parallel-1",
+            "value": 2.391813952780002,
             "unit": "seconds"
           }
         ]

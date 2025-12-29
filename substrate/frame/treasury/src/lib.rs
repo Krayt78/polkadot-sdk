@@ -90,6 +90,7 @@ use scale_info::TypeInfo;
 use alloc::{boxed::Box, collections::btree_map::BTreeMap};
 use sp_runtime::{
 	traits::{
+		fungible::{Balanced, Inspect, InspectHold, Mutate, MutateHold},
 		AccountIdConversion, BlockNumberProvider, CheckedAdd, One, Saturating, StaticLookup,
 		UniqueSaturatedInto, Zero,
 	},
@@ -100,8 +101,7 @@ use frame_support::{
 	dispatch::{DispatchResult, DispatchResultWithPostInfo},
 	ensure, print,
 	traits::{
-		tokens::Pay, Currency, ExistenceRequirement::KeepAlive, Get, Imbalance, OnUnbalanced,
-		ReservableCurrency, WithdrawReasons,
+		tokens::Pay, ExistenceRequirement::KeepAlive, Get, Imbalance, OnUnbalanced, WithdrawReasons,
 	},
 	weights::Weight,
 	BoundedVec, PalletId,
@@ -112,12 +112,12 @@ pub use pallet::*;
 pub use weights::WeightInfo;
 
 pub type BalanceOf<T, I = ()> =
-	<<T as Config<I>>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	<<T as Config<I>>::Currency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 pub type AssetBalanceOf<T, I> = <<T as Config<I>>::Paymaster as Pay>::Balance;
-pub type PositiveImbalanceOf<T, I = ()> = <<T as Config<I>>::Currency as Currency<
+pub type PositiveImbalanceOf<T, I = ()> = <<T as Config<I>>::Currency as Inspect<
 	<T as frame_system::Config>::AccountId,
 >>::PositiveImbalance;
-pub type NegativeImbalanceOf<T, I = ()> = <<T as Config<I>>::Currency as Currency<
+pub type NegativeImbalanceOf<T, I = ()> = <<T as Config<I>>::Currency as Inspect<
 	<T as frame_system::Config>::AccountId,
 >>::NegativeImbalance;
 type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
@@ -215,10 +215,20 @@ pub mod pallet {
 	#[pallet::pallet]
 	pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
+	#[pallet::composite_enum]
+	pub enum HoldReason {
+		/// The account has deposited tokens for making a proposal.
+		ProposalDeposit,
+	}
+
 	#[pallet::config]
 	pub trait Config<I: 'static = ()>: frame_system::Config {
 		/// The staking balance.
-		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+		type NativeBalance: Inspect<Self::AccountId>
+					+ Mutate<Self::AccountId>
+					+ InspectHold<Self::AccountId, Reason: From<HoldReason>>
+					+ MutateHold<Self::AccountId, Reason: From<HoldReason>>
+					+ Unbalanced<Self::AccountId>;
 
 		/// Origin from which rejections must come.
 		type RejectOrigin: EnsureOrigin<Self::RuntimeOrigin>;
@@ -374,9 +384,9 @@ pub mod pallet {
 		fn build(&self) {
 			// Create Treasury account
 			let account_id = Pallet::<T, I>::account_id();
-			let min = T::Currency::minimum_balance();
-			if T::Currency::free_balance(&account_id) < min {
-				let _ = T::Currency::make_free_balance_be(&account_id, min);
+			let min = T::NativeBalance::minimum_balance();
+			if T::NativeBalance::reducible_balance(&account_id, Preservation::Expendable, Fortitude::Polite) < min {
+				let _ = T::NativeBalance::set_balance(&account_id, min);
 			}
 		}
 	}
@@ -459,8 +469,8 @@ pub mod pallet {
 			let pot = Self::pot();
 			let deactivated = Deactivated::<T, I>::get();
 			if pot != deactivated {
-				T::Currency::reactivate(deactivated);
-				T::Currency::deactivate(pot);
+				T::NativeBalance::reactivate(deactivated);
+				T::NativeBalance::deactivate(pot);
 				Deactivated::<T, I>::put(&pot);
 				Self::deposit_event(Event::<T, I>::UpdatedInactive {
 					reactivated: deactivated,
@@ -930,7 +940,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 						Proposals::<T, I>::remove(index);
 
 						// return their deposit.
-						let err_amount = T::Currency::unreserve(&p.proposer, p.bond);
+						let err_amount = T::NativeBalance::release(&HoldReason::<I>::DecisionDeposit.into(),&p.proposer, p.bond,Precision::BestEffort)?;
 						debug_assert!(err_amount.is_zero());
 
 						// provide the allocation.
@@ -973,7 +983,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 			let burn = budget_remaining.saturating_sub(new_budget_remaining);
 			budget_remaining = new_budget_remaining;
 
-			let (debit, credit) = T::Currency::pair(burn);
+			let (debit, credit) = T::NativeBalance::pair(burn);
 			imbalance.subsume(debit);
 			T::BurnDestination::on_unbalanced(credit);
 			Self::deposit_event(Event::Burnt { burnt_funds: burn })
@@ -984,7 +994,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		// Thus we can't spend more than account free balance minus ED;
 		// Thus account is kept alive; qed;
 		if let Err(problem) =
-			T::Currency::settle(&account_id, imbalance, WithdrawReasons::TRANSFER, KeepAlive)
+			T::NativeBalance::settle(&account_id, imbalance, WithdrawReasons::TRANSFER, KeepAlive)
 		{
 			print("Inconsistent state - couldn't settle imbalance for funds spent by treasury");
 			// Nothing else to do here.
@@ -999,9 +1009,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// Return the amount of money in the pot.
 	// The existential deposit is not part of the pot so treasury account never gets deleted.
 	pub fn pot() -> BalanceOf<T, I> {
-		T::Currency::free_balance(&Self::account_id())
-			// Must never be less than 0 but better be safe.
-			.saturating_sub(T::Currency::minimum_balance())
+		T::NativeBalance::reducible_balance(&Self::account_id(), Preservation::Preserve, Fortitude::Polite)
 	}
 
 	/// Ensure the correctness of the state of this pallet.
@@ -1089,7 +1097,7 @@ impl<T: Config<I>, I: 'static> OnUnbalanced<NegativeImbalanceOf<T, I>> for Palle
 		let numeric_amount = amount.peek();
 
 		// Must resolve into existing but better to be safe.
-		let _ = T::Currency::resolve_creating(&Self::account_id(), amount);
+		let _ = T::NativeBalance::resolve_creating(&Self::account_id(), amount);
 
 		Self::deposit_event(Event::Deposit { value: numeric_amount });
 	}

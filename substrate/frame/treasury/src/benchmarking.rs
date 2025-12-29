@@ -64,8 +64,8 @@ fn setup_proposal<T: Config<I>, I: 'static>(
 	u: u32,
 ) -> (T::AccountId, BalanceOf<T, I>, AccountIdLookupOf<T>) {
 	let caller = account("caller", u, SEED);
-	let value: BalanceOf<T, I> = T::Currency::minimum_balance() * 100u32.into();
-	let _ = T::Currency::make_free_balance_be(&caller, value);
+	let value: BalanceOf<T, I> = T::NativeBalance::minimum_balance() * 100u32.into();
+	let _ = T::NativeBalance::set_balance(&caller, value);
 	let beneficiary = account("beneficiary", u, SEED);
 	let beneficiary_lookup = T::Lookup::unlookup(beneficiary);
 	(caller, value, beneficiary_lookup)
@@ -92,8 +92,8 @@ fn create_approved_proposals<T: Config<I>, I: 'static>(n: u32) -> Result<(), &'s
 
 fn setup_pot_account<T: Config<I>, I: 'static>() {
 	let pot_account = Treasury::<T, I>::account_id();
-	let value = T::Currency::minimum_balance().saturating_mul(1_000_000_000u32.into());
-	let _ = T::Currency::make_free_balance_be(&pot_account, value);
+	let value = T::NativeBalance::minimum_balance().saturating_mul(1_000_000_000u32.into());
+	let _ = T::NativeBalance::set_balance(&pot_account, value);
 }
 
 fn assert_last_event<T: Config<I>, I: 'static>(generic_event: <T as Config<I>>::RuntimeEvent) {

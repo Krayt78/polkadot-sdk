@@ -52,7 +52,7 @@ pub mod cleanup_proposals {
 			#[allow(deprecated)]
 			for (proposal_index, p) in Proposals::<T, I>::iter() {
 				if !approval_index.contains(&proposal_index) {
-					let err_amount = T::Currency::unreserve(&p.proposer, p.bond);
+					let err_amount = T::NativeBalance::unreserve(&p.proposer, p.bond);
 					if err_amount.is_zero() {
 						Proposals::<T, I>::remove(proposal_index);
 						log::info!(
